@@ -109,10 +109,17 @@ class Leboncoin
     public function getAnnonces($params, $page = 0)
     {
         $result = $this->callApi("finder/search", $this->filterMapGetAnnonces($params, $page));
+
+        if (!isset($result->total)) {
+            return false;
+        }
+
         $annonces = array("total" => $result->total, "annonces" => array());
+
         if (!isset($result->ads) || count($result->ads) == 0) {
             return false;
         }
+
         foreach ($result->ads as $k => $a) {
             $a = Annonce::parse($a);
             $annonces['annonces'][] = $a;
@@ -196,22 +203,23 @@ class Leboncoin
                     $l['city_zipcodes'][] = array("zipcode" => (string)$zipcode);
                 }
             }
-            /*if (empty($l) && is_array($params['location'])) {
-                $l = array();
-                $z = array();
-                foreach ($params['location'] as $ll) {
-                    if ($ll['zipcode']) {
-                        $z[] = array("zipcode" => $ll['zipcode']);
-                    }
-                }
-                if (count($z) > 0) {
-                    $l['city_zipcodes'] = $z;
-                } else {
-                    $l["regions"] = array($params['location'][0]['region_id']);
-                }
-            }*/
         }
         $post['filters']['location'] = $l;
+
+        // Price
+        if (isset($params['price'])) {
+            $p = [];
+
+            if (isset($params['price']['min'])) {
+                $p["min"][] = $params['price']['min'];
+            }
+
+            if (isset($params['price']['max'])) {
+                $p["max"][] = $params['price']['max'];
+            }
+
+            $post['filters']['ranges']['price'] = $p;
+        }
 
         // Sort
         if (isset($params['sortby'])) {
