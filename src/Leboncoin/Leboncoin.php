@@ -211,11 +211,11 @@ class Leboncoin
             $p = [];
 
             if (isset($params['price']['min'])) {
-                $p["min"][] = $params['price']['min'];
+                $p["min"] = $params['price']['min'];
             }
 
             if (isset($params['price']['max'])) {
-                $p["max"][] = $params['price']['max'];
+                $p["max"] = $params['price']['max'];
             }
 
             $post['filters']['ranges']['price'] = $p;
